@@ -6,6 +6,7 @@ pio.templates.default = "simple_white"
 
 
 def test_univariate_gaussian():
+    # test commit 1
     # Question 1 - Draw samples and print fitted model
     raise NotImplementedError()
 
