@@ -6,9 +6,9 @@ pio.templates.default = "simple_white"
 
 
 def test_univariate_gaussian():
-    # test commit 1
     # Question 1 - Draw samples and print fitted model
-    raise NotImplementedError()
+    gaussian_1000_samples = np.random.normal(10, 1, size=1000)
+    # sample_1 =
 
     # Question 2 - Empirically showing sample mean is consistent
     raise NotImplementedError()
