@@ -149,8 +149,8 @@ class MultivariateGaussian:
         Sets `self.mu_`, `self.cov_` attributes according to calculated estimation.
         Then sets `self.fitted_` attribute to `True`
         """
-        raise NotImplementedError()
-
+        self.mu_ = np.mean(X, axis=0)
+        self.cov_ = np.cov(X, ddof=1)  # may need transpose before computing cov
         self.fitted_ = True
         return self
 
@@ -174,7 +174,11 @@ class MultivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        raise NotImplementedError()
+        after_mat_mult = np.matmul(np.subtract(X, self.mu_).T, np.invert(self.cov_), np.subtract(X, self.mu_))
+        exp_pdf = np.exp(np.divide(after_mat_mult, -2))
+        return np.divide(exp_pdf,
+                         np.float_power(np.float_power(2 * np.pi, X.shape[0]) * np.linalg.det(self.cov_),
+                                        0.5))
 
     @staticmethod
     def log_likelihood(mu: np.ndarray, cov: np.ndarray, X: np.ndarray) -> float:
@@ -195,4 +199,7 @@ class MultivariateGaussian:
         log_likelihood: float
             log-likelihood calculated over all input data and under given parameters of Gaussian
         """
-        raise NotImplementedError()
+        likelihood_1 = np.log(np.float_power(2 * np.pi, X.shape[0]) * np.linalg.det(cov)) * X.shape[1] / (-2)
+        after_mat_mult = np.matmul(np.subtract(X, mu).T, np.invert(cov), np.subtract(X, mu))
+        likelihood_2 = np.sum(after_mat_mult) / 2
+        return likelihood_1 - likelihood_2
