@@ -47,16 +47,17 @@ def test_multivariate_gaussian():
     gaussian_1000_multi_samples = np.random.multivariate_normal(mu, cov, size=1000)
     multivariate_gaussian = MultivariateGaussian()
     multivariate_gaussian.fit(gaussian_1000_multi_samples)
-
+    print(multivariate_gaussian.mu_)
+    print(multivariate_gaussian.cov_)
 
     # Question 5 - Likelihood evaluation
-    raise NotImplementedError()
+    # raise NotImplementedError()
 
     # Question 6 - Maximum likelihood
-    raise NotImplementedError()
+    # raise NotImplementedError()
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-    test_univariate_gaussian()
+    #test_univariate_gaussian() todo not a comment
     test_multivariate_gaussian()

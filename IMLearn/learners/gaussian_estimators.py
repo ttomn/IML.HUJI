@@ -150,7 +150,7 @@ class MultivariateGaussian:
         Then sets `self.fitted_` attribute to `True`
         """
         self.mu_ = np.mean(X, axis=0)
-        self.cov_ = np.cov(X, ddof=1)  # may need transpose before computing cov
+        self.cov_ = np.cov(X.T, ddof=1)  # may need transpose before computing cov
         self.fitted_ = True
         return self
 
