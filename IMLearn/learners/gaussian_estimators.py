@@ -199,7 +199,13 @@ class MultivariateGaussian:
         log_likelihood: float
             log-likelihood calculated over all input data and under given parameters of Gaussian
         """
-        likelihood_1 = np.log(np.float_power(2 * np.pi, X.shape[0]) * np.linalg.det(cov)) * X.shape[1] / (-2)
-        after_mat_mult = np.matmul(np.subtract(X, mu).T, np.invert(cov), np.subtract(X, mu))
-        likelihood_2 = np.sum(after_mat_mult) / 2
+        lg = np.log(2 * np.pi)
+        fl1 = X.shape[1] * lg
+        fl2 = np.log(np.linalg.det(cov))
+        likelihood_1 = (fl1 + fl2) * X.shape[0] / (-2)
+        x_minus_mu = X-mu
+        inv_cov = inv(cov)
+        x_minus_mu_t = (X - mu).T
+        sum_of_mat_mult = np.einsum('ij,jk,ki', x_minus_mu, inv_cov, x_minus_mu_t)
+        likelihood_2 = sum_of_mat_mult / 2
         return likelihood_1 - likelihood_2

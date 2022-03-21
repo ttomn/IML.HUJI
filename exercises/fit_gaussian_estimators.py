@@ -4,10 +4,12 @@ from IMLearn.learners import UnivariateGaussian, MultivariateGaussian
 import numpy as np
 import plotly.graph_objects as go
 import plotly.io as pio
+import plotly.express as px
 
 pio.templates.default = "simple_white"
 
 TRUE_EXPECTATION = 10
+EXPECTATION_AMOUNT_Q5 = 200
 
 
 def test_univariate_gaussian():
@@ -51,13 +53,21 @@ def test_multivariate_gaussian():
     print(multivariate_gaussian.cov_)
 
     # Question 5 - Likelihood evaluation
-    # raise NotImplementedError()
+    X_axis = np.linspace(-10, 10, EXPECTATION_AMOUNT_Q5)
+    Y_axis = np.linspace(-10, 10, EXPECTATION_AMOUNT_Q5)
+    multivariate_gaussian_likelihood = np.zeros([EXPECTATION_AMOUNT_Q5, EXPECTATION_AMOUNT_Q5])
+    for i in range(EXPECTATION_AMOUNT_Q5):
+        for j in range(EXPECTATION_AMOUNT_Q5):
+            multivariate_gaussian_likelihood[i][j] = multivariate_gaussian.log_likelihood(
+                np.array([X_axis[i], 0, Y_axis[j], 0]), cov, gaussian_1000_multi_samples)
+    px.imshow(multivariate_gaussian_likelihood, x=X_axis, y=Y_axis, title=r"$\text{log likelihood as "
+                                                                                r"a function of expectation change}$",
+                    labels=dict(x="first feature expectation", y= "third feature expectation")).show()
 
     # Question 6 - Maximum likelihood
     # raise NotImplementedError()
 
-
 if __name__ == '__main__':
     np.random.seed(0)
-    #test_univariate_gaussian() todo not a comment
+    # test_univariate_gaussian() todo not a comment
     test_multivariate_gaussian()
