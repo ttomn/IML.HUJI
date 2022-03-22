@@ -79,7 +79,7 @@ class UnivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        exp_pdf = np.exp(np.divide((np.power(np.subtract(X, self.mu_), 2)), (-2) * self.var_))
+        exp_pdf = np.exp(((np.power(X - self.mu_, 2)) / ((-2) * self.var_)))
         return np.divide(exp_pdf, np.float_power(2 * self.var_ * np.pi, 0.5))
 
     @staticmethod
@@ -151,7 +151,7 @@ class MultivariateGaussian:
         Then sets `self.fitted_` attribute to `True`
         """
         self.mu_ = np.mean(X, axis=0)
-        self.cov_ = np.cov(X.T, ddof=1)  # may need transpose before computing cov
+        self.cov_ = np.cov(X.T, ddof=1)
         self.fitted_ = True
         return self
 
@@ -175,11 +175,13 @@ class MultivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        after_mat_mult = np.matmul(np.subtract(X, self.mu_).T, np.invert(self.cov_), np.subtract(X, self.mu_))
+        x_minus_mu = X - self.mu_
+        inv_cov = inv(self.cov_)
+        x_minus_mu_t = (X - self.mu_).T
+        after_mat_mult = x_minus_mu_t @ inv_cov @ x_minus_mu
         exp_pdf = np.exp(np.divide(after_mat_mult, -2))
-        return np.divide(exp_pdf,
-                         np.float_power(np.float_power(2 * np.pi, X.shape[0]) * np.linalg.det(self.cov_),
-                                        0.5))
+        return np.divide(exp_pdf, np.float_power(np.float_power(2 * np.pi, X.shape[0]) *
+                                                 np.linalg.det(self.cov_), 0.5))
 
     @staticmethod
     def log_likelihood(mu: np.ndarray, cov: np.ndarray, X: np.ndarray) -> float:
