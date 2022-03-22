@@ -101,8 +101,9 @@ class UnivariateGaussian:
         log_likelihood: float
             log-likelihood calculated
         """
-        exp_likelihood = np.exp(np.sum((np.power(np.subtract(X, mu), 2))) / ((-2) * sigma))
-        return exp_likelihood / (np.power(2 * sigma * np.pi, 0.5 * X.size))
+        likelihood_1 = np.sum(np.power(X - mu, 2)) / ((-2) * sigma)
+        likelihood_2 = np.log(2 * sigma * np.pi) * 0.5 * X.size
+        return likelihood_1 - likelihood_2
 
 
 class MultivariateGaussian:
@@ -203,7 +204,7 @@ class MultivariateGaussian:
         fl1 = X.shape[1] * lg
         fl2 = np.log(np.linalg.det(cov))
         likelihood_1 = (fl1 + fl2) * X.shape[0] / (-2)
-        x_minus_mu = X-mu
+        x_minus_mu = X - mu
         inv_cov = inv(cov)
         x_minus_mu_t = (X - mu).T
         sum_of_mat_mult = np.einsum('ij,jk,ki', x_minus_mu, inv_cov, x_minus_mu_t)
