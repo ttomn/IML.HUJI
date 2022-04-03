@@ -1,14 +1,16 @@
+from fileinput import filename
+
 from IMLearn.utils import split_train_test
 from IMLearn.learners.regressors import LinearRegression
 
 from typing import NoReturn
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
-import plotly.express as px
-import plotly.io as pio
+# import plotly.graph_objects as go
+# import plotly.express as px
+# import plotly.io as pio
 
-pio.templates.default = "simple_white"
+# pio.templates.default = "simple_white"
 
 
 def date_to_int(dates: np.ndarray) -> np.ndarray:
@@ -29,15 +31,16 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
-    df = pd.read_csv(str,
-                     dtype={"id": "np.int64", "price": "np.int32", "bedrooms": "np.int32", "bathrooms": "np.float32",
-                            "sqft_living": "np.int32", "sqft_lot": "np.int32", "floors": "np.float32",
-                            "waterfront": "np.int32", "view": "np.int32", "condition": "np.int32", "grade": "np.int32",
-                            "sqft_above": "np.int32", "sqft_basement": "np.int32", "yr_built": "np.int32",
-                            "yr_renovated": "np.int32", "zipcode": "np.int32", "lat": "np.float64",
-                            "long": "np.float32", "sqft_living15": "np.int32", "sqft_lot15": "np.int32"})
+    df = pd.read_csv(filename)
+    df.fillna(0)
+    df[["id", "price", "bedrooms", "bathrooms", "sqft_living", "sqft_lot", "floors", "waterfront", "view",
+    "condition", "grade", "sqft_above", "sqft_basement", "yr_built", "yr_renovated",
+    "zipcode", "lat", "long", "sqft_living15", "sqft_lot15"]] = df[["id", "price", "bedrooms", "bathrooms", "sqft_living", "sqft_lot", "floors", "waterfront", "view",
+    "condition", "grade", "sqft_above", "sqft_basement", "yr_built", "yr_renovated",
+    "zipcode", "lat", "long", "sqft_living15", "sqft_lot15"]].apply(pd.to_numeric)
+    df.info()
     # df = df.drop(df[df.id == 0].index) todo this is useful to delete rows by condition on cols
-    dates = df[['date']].to_numpy().flatten()
+    dates = df[['bedrooms']].to_numpy().flatten()
     df.update(pd.DataFrame({'date': date_to_int(dates)}))
     df['date'] = df['date'].astype(np.int32)
     df = df[
@@ -74,9 +77,8 @@ def load_data(filename: str):
 
     df.merge(mean_price, on='zipcode_mean_price', how='left')
 
-    df = df.drop(['id','zipcode'], 1) #the df may need to change to pandas.DataFrame
+    df = df.drop(['id', 'zipcode'], 1)  # the df may need to change to pandas.DataFrame
     return df
-
 
 
 def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
@@ -102,7 +104,9 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
 if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of housing prices dataset
-    raise NotImplementedError()
+    df = load_data("/cs/usr/tomn/Desktop/IML/IML.HUJI/datasets/house_prices.csv")
+    df.info()
+    print(df)
 
     # Question 2 - Feature evaluation with respect to response
     raise NotImplementedError()

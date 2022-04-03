@@ -3,7 +3,7 @@ from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
 from numpy.linalg import pinv, inv, matrix_rank
-from loss_functions import mean_square_error
+from IMLearn.metrics.loss_functions import mean_square_error
 
 
 class LinearRegression(BaseEstimator):
