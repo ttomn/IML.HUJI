@@ -7,7 +7,13 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.io as pio
+
 pio.templates.default = "simple_white"
+
+
+def date_to_int(dates: np.ndarray) -> np.ndarray:
+    new_dates = dates.view((str, 1)).reshape(len(dates), -1)[:, 0:6]
+    return np.fromstring(new_dates.tostring(), dtype=(str, 6))
 
 
 def load_data(filename: str):
@@ -23,7 +29,54 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
-    raise NotImplementedError()
+    df = pd.read_csv(str,
+                     dtype={"id": "np.int64", "price": "np.int32", "bedrooms": "np.int32", "bathrooms": "np.float32",
+                            "sqft_living": "np.int32", "sqft_lot": "np.int32", "floors": "np.float32",
+                            "waterfront": "np.int32", "view": "np.int32", "condition": "np.int32", "grade": "np.int32",
+                            "sqft_above": "np.int32", "sqft_basement": "np.int32", "yr_built": "np.int32",
+                            "yr_renovated": "np.int32", "zipcode": "np.int32", "lat": "np.float64",
+                            "long": "np.float32", "sqft_living15": "np.int32", "sqft_lot15": "np.int32"})
+    # df = df.drop(df[df.id == 0].index) todo this is useful to delete rows by condition on cols
+    dates = df[['date']].to_numpy().flatten()
+    df.update(pd.DataFrame({'date': date_to_int(dates)}))
+    df['date'] = df['date'].astype(np.int32)
+    df = df[
+        (df["id"] >= 1) and
+        (df["date"] >= 20000000 and df["date"] <= 20220000) and
+        (df["price"] >= 50000 and df["price"] <= 10000000) and
+        (df["bedrooms"] >= 0 and df["bedrooms"] <= 11) and
+        (df["bathrooms"] >= 0 and df["bathrooms"] <= 10) and
+        (df["sqft_living"] >= 250 and df["sqft_living"] <= 10000) and
+        (df["sqft_lot"] >= 450 and df["sqft_lot"] <= 1800000) and
+        (df["floors"] >= 1 and df["floors"] <= 4) and
+        (df["waterfront"] == 0 or df["waterfront"] == 1) and
+        (df["view"] >= 0 and df["view"] <= 4) and
+        (df["condition"] >= 1 and df["condition"] <= 5) and
+        (df["grade"] >= 1 and df["grade"] <= 13) and
+        (df["sqft_above"] >= 250 and df["sqft_above"] <= 10000) and
+        (df["sqft_basement"] >= 0 and df["sqft_basement"] <= 5000) and
+        (df["yr_built"] >= 1800 and df["yr_built"] <= 2022) and
+        (df["yr_renovated"] >= 0 and df["yr_renovated"] <= 2022) and
+        (df["zipcode"] >= 98000 and df["zipcode"] <= 99000) and
+        (df["lat"] >= 47 and df["lat"] <= 48) and
+        (df["long"] >= -123 and df["long"] <= -121) and
+        (df["sqft_living15"] >= 350 and df["sqft_living15"] <= 7000) and
+        (df["sqft_lot15"] >= 500 and df["sqft_lot15"] <= 1000000)
+        ]
+
+    # inserting the "yr_renovated" col the last year in which the building had had any renovation.
+    df["yr_renovated"] = df[["yr_built", "yr_renovated"]].max(axis=1)
+
+    prices_by_zipcode = pd.DataFrame({
+        'zipcode': df[['zipcode']],
+        'price': df[['price']]})
+    mean_price = prices_by_zipcode.groupby('zipcode').mean()
+
+    df.merge(mean_price, on='zipcode_mean_price', how='left')
+
+    df = df.drop(['id','zipcode'], 1) #the df may need to change to pandas.DataFrame
+    return df
+
 
 
 def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
