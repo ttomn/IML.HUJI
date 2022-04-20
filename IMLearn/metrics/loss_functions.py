@@ -16,7 +16,7 @@ def mean_square_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     -------
     MSE of given predictions
     """
-    raise NotImplementedError()
+    return np.mean(np.power(y_true - y_pred, 2))
 
 
 def misclassification_error(y_true: np.ndarray, y_pred: np.ndarray, normalize: bool = True) -> float:
@@ -36,7 +36,10 @@ def misclassification_error(y_true: np.ndarray, y_pred: np.ndarray, normalize: b
     -------
     Misclassification of given predictions
     """
-    raise NotImplementedError()
+    err = y_true.shape[0] - np.sum(y_true == y_pred)
+    if normalize:
+        return err / y_true.shape[0]
+    return err
 
 
 def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
