@@ -19,6 +19,7 @@ def load_data(filename: str) ->pd.DataFrame:
     ----------
     filename: str
         Path to house prices dataset
+
     Returns
     -------
     Design matrix and response vector (prices) - either as a single
@@ -82,8 +83,10 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     ----------
     X : DataFrame of shape (n_samples, n_features)
         Design matrix of regression problem
+
     y : array-like of shape (n_samples, )
         Response vector to evaluate against
+
     output_path: str (default ".")
         Path to folder in which plots are saved
     """
