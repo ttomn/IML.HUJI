@@ -98,7 +98,7 @@ class Perceptron(BaseEstimator):
         self.coefs_ = np.zeros(X.shape[1])
         for j in range(self.max_iter_):
             for i in range(X.shape[0]):
-                if y[i] * np.inner(self.coefs_, X[i]) < 0:
+                if y[i] * np.inner(self.coefs_, X[i]) <= 0:
                     self.coefs_ += y[i] * X[i]
                     self.fitted_ = True
                     self.callback_(self, X[i], y[i])
