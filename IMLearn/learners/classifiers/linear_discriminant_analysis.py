@@ -1,7 +1,6 @@
 from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
-import pandas as pd
 from numpy.linalg import det, inv
 
 from ...metrics import misclassification_error
@@ -55,7 +54,7 @@ class LDA(BaseEstimator):
         X_and_y = np.concatenate((y.T, X), axis=1)
         self.mu_ = np.array([np.mean(X_and_y[X_and_y[:, 0] == i, 1:], axis=0) for i in self.classes_])
         cov_sum = np.zeros(X.shape[1], X.shape[1])
-        for i in y.shape[0]:
+        for i in range(y.shape[0]):
             temp = X[i] - self.mu_[np.where(self.classes_ == y[i])]
             cov_sum += temp @ temp.T
         self.cov_ = cov_sum / (y.shape[0] - self.classes_.shape[0])
