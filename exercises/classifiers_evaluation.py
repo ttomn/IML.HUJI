@@ -78,27 +78,48 @@ def compare_gaussian_classifiers():
         # Load dataset
         X, y = load_dataset(f)
         y = y.astype(int)
+        losses = [model.fit(X, y).loss(X, y) for model in models]
 
         lims = np.array([X.min(axis=0), X.max(axis=0)]).T + np.array([-.4, .4])
-        fig = make_subplots(rows=1, cols=2, subplot_titles=[rf"$\textbf{{{m}}}$" for m in model_names],
-                            horizontal_spacing=0.01, vertical_spacing=.03)
+        fig = make_subplots(rows=1, cols=2, subplot_titles=[rf"$\textbf{{{model_names[i]} with accuracy of "
+                                                            rf"{1 - losses[i]}}}$" for i in range(len(
+            model_names))], horizontal_spacing=0.01, vertical_spacing=.03)
+
         for i, model in enumerate(models):
             # Fit models and predict over training set
-            model.fit(X, y)
             # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
             # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
             from IMLearn.metrics import accuracy
 
-            fig.add_traces([decision_surface(model.predict, lims[0], lims[1], showscale=False),
-                            go.Scatter(x=X[:, 0], y=X[:, 1], mode="markers", showlegend=False,
-                                       marker=dict(color=y, symbol=symbols[y],
-                                                   colorscale=[custom[0], custom[-1]],
-                                                   line=dict(color="black", width=1)))],
-                           rows=1, cols=i+1)
+            fig.add_traces([
+                go.Scatter(x=X[:, 0], y=X[:, 1], mode="markers", showlegend=False,
+                           marker=dict(color=model.predict(X), symbol=symbols[y],
+                                       colorscale=[custom[0], custom[-1]],
+                                       line=dict(color="black", width=1)))],
+                rows=1, cols=i + 1)
 
             fig.update_layout(title=rf"$\textbf{{predictions of  {f} Dataset}}$",
                               margin=dict(t=100)) \
                 .update_xaxes(visible=False).update_yaxes(visible=False)
+            fig.add_traces([go.Scatter(x=model.mu_[:, 0], y=model.mu_[:, 1], mode="markers", showlegend=False,
+                                       marker=dict(size=20, color="black", symbol="x"))], rows=1, cols=i + 1)
+            for j, mu in enumerate(model.mu_):
+                if model_names[i] == "LDA":
+                    fig.add_shapes(type="circle",
+                                   xref="x", yref="y",
+                                   x0=mu[0] - model.cov_[0][0],
+                                   y0=mu[1] - model.cov_[1][1],
+                                   x1=mu[0] + model.cov_[0][0],
+                                   y1=mu[1] + model.cov_[1][1],
+                                   line_color="LightSeaGreen", rows=1, cols=i + 1)
+                else:
+                    fig.add_shape(type="circle",
+                                  xref="x", yref="y",
+                                  x0=mu[0] - model.vars_[j][0],
+                                  y0=mu[1] - model.vars_[j][1],
+                                  x1=mu[0] + model.vars_[j][0],
+                                  y1=mu[1] + model.vars_[j][1],
+                                  line_color="LightSeaGreen", rows=1, cols=i + 1)
         fig.show()
 
 
