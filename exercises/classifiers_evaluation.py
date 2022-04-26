@@ -5,6 +5,8 @@ from IMLearn.learners.classifiers import Perceptron
 import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.subplots import make_subplots
+from math import atan2, pi
+from IMLearn.metrics import accuracy
 
 from utils import decision_surface, custom
 
@@ -67,6 +69,29 @@ def run_perceptron():
         fig.show()
 
 
+def get_ellipse(mu: np.ndarray, cov: np.ndarray):
+    """
+    Draw an ellipse centered at given location and according to specified covariance matrix
+    Parameters
+    ----------
+    mu : ndarray of shape (2,)
+        Center of ellipse
+    cov: ndarray of shape (2,2)
+        Covariance of Gaussian
+    Returns
+    -------
+        scatter: A plotly trace object of the ellipse
+    """
+    l1, l2 = tuple(np.linalg.eigvalsh(cov)[::-1])
+    theta = atan2(l1 - cov[0, 0], cov[0, 1]) if cov[0, 1] != 0 else (
+        np.pi / 2 if cov[0, 0] < cov[1, 1] else 0)
+    t = np.linspace(0, 2 * pi, 100)
+    xs = (l1 * np.cos(theta) * np.cos(t)) - (l2 * np.sin(theta) * np.sin(t))
+    ys = (l1 * np.sin(theta) * np.cos(t)) + (l2 * np.cos(theta) * np.sin(t))
+
+    return go.Scatter(x=mu[0] + xs, y=mu[1] + ys, mode="lines", marker_color="black", showlegend=False)
+
+
 def compare_gaussian_classifiers():
     """
     Fit both Gaussian Naive Bayes and LDA classifiers on both gaussians1 and gaussians2 datasets
@@ -75,36 +100,32 @@ def compare_gaussian_classifiers():
     model_names = ["Gaussian Naive Bias", "LDA"]
     symbols = np.array(["circle", "x", "square"])
     for f in ["gaussian1.npy", "gaussian2.npy"]:
-        # Load dataset
         X, y = load_dataset(f)
         y = y.astype(int)
-        losses = [model.fit(X, y).loss(X, y) for model in models]
+        accuracies = [accuracy(y, model.fit(X, y).predict(X)) for model in models]
 
-        lims = np.array([X.min(axis=0), X.max(axis=0)]).T + np.array([-.4, .4])
         fig = make_subplots(rows=1, cols=2, subplot_titles=[rf"$\textbf{{{model_names[i]} with accuracy of "
-                                                            rf"{1 - losses[i]}}}$" for i in range(len(
-            model_names))], horizontal_spacing=0.01, vertical_spacing=.03)
+                                                            rf"{accuracies[i]}}}$" for i in range(len(
+            model_names))], horizontal_spacing=0.01)
+
+        fig.update_layout(title=rf"$\textbf{{Predictions of {f} Dataset}}$",
+                          margin=dict(t=100))
 
         for i, model in enumerate(models):
-            # Fit models and predict over training set
-            # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
-            # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
-            from IMLearn.metrics import accuracy
+            fig.add_trace(go.Scatter(x=X[:, 0], y=X[:, 1], mode="markers", showlegend=False,
+                                     marker=dict(color=model.predict(X), symbol=symbols[y],
+                                                 colorscale=[custom[0], custom[-1]],
+                                                 line=dict(color="black", width=1))), row=1, col=i + 1)
 
-            fig.add_traces([
-                go.Scatter(x=X[:, 0], y=X[:, 1], mode="markers", showlegend=False,
-                           marker=dict(color=model.predict(X), symbol=symbols[y],
-                                       colorscale=[custom[0], custom[-1]],
-                                       line=dict(color="black", width=1)))],
-                rows=1, cols=i + 1)
+            fig.add_trace(go.Scatter(x=model.mu_[:, 0], y=model.mu_[:, 1], mode="markers", showlegend=False,
+                                     marker=dict(size=20, color="black", symbol="x")), row=1, col=i + 1)
 
-            fig.update_layout(title=rf"$\textbf{{predictions of  {f} Dataset}}$",
-                              margin=dict(t=100)) \
-                .update_xaxes(visible=False).update_yaxes(visible=False)
-            fig.add_traces([go.Scatter(x=model.mu_[:, 0], y=model.mu_[:, 1], mode="markers", showlegend=False,
-                                       marker=dict(size=20, color="black", symbol="x"))], rows=1, cols=i + 1)
+            for j in range(len(symbols)):
+                if model_names[i] == "LDA":
+                    fig.add_trace(get_ellipse(model.mu_[j], model.cov_), row=1, col=i + 1)
+                else:
+                    fig.add_trace(get_ellipse(model.mu_[j], np.diag(model.vars_[j])), row=1, col=i + 1)
         fig.show()
-
 
 
 if __name__ == '__main__':

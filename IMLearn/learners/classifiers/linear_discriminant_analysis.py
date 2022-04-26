@@ -78,25 +78,6 @@ class LDA(BaseEstimator):
         classes_indexes = np.argmax(self.likelihood(X), axis=1)
         y = (self.classes_[classes_indexes])
         return y
-        # y = np.zeros(X.shape[0])
-        # for i in range(X.shape[0]):
-        #     y[i] = (self.classes_[classes_indexes[i]])
-
-        # a = self.mu_ @ self._cov_inv
-        # b = []
-        # for k in range(self.classes_.shape[0]):
-        #     b.append(np.log(self.pi_[k]) - 0.5 * self.mu_[k] @ self._cov_inv @ self.mu_[k].T)
-        # y = np.zeros(X.shape[0])
-        # for i in range(X.shape[0]):
-        #     max_index = 0
-        #     max_value = a[0] @ X[i] + b[0]
-        #     for k in range(1, self.classes_.shape[0]):
-        #         curr_value = a[k] @ X[i] + b[k]
-        #         if curr_value > max_value:
-        #             max_index = k
-        #             max_value = curr_value
-        #     y[i] =(self.classes_[max_index])
-        # return y
 
     def likelihood(self, X: np.ndarray) -> np.ndarray:
         """
