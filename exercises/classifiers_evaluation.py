@@ -103,24 +103,8 @@ def compare_gaussian_classifiers():
                 .update_xaxes(visible=False).update_yaxes(visible=False)
             fig.add_traces([go.Scatter(x=model.mu_[:, 0], y=model.mu_[:, 1], mode="markers", showlegend=False,
                                        marker=dict(size=20, color="black", symbol="x"))], rows=1, cols=i + 1)
-            for j, mu in enumerate(model.mu_):
-                if model_names[i] == "LDA":
-                    fig.add_shapes(type="circle",
-                                   xref="x", yref="y",
-                                   x0=mu[0] - model.cov_[0][0],
-                                   y0=mu[1] - model.cov_[1][1],
-                                   x1=mu[0] + model.cov_[0][0],
-                                   y1=mu[1] + model.cov_[1][1],
-                                   line_color="LightSeaGreen", rows=1, cols=i + 1)
-                else:
-                    fig.add_shape(type="circle",
-                                  xref="x", yref="y",
-                                  x0=mu[0] - model.vars_[j][0],
-                                  y0=mu[1] - model.vars_[j][1],
-                                  x1=mu[0] + model.vars_[j][0],
-                                  y1=mu[1] + model.vars_[j][1],
-                                  line_color="LightSeaGreen", rows=1, cols=i + 1)
         fig.show()
+
 
 
 if __name__ == '__main__':
