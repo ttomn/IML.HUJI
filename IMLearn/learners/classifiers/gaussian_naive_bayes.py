@@ -53,8 +53,8 @@ class GaussianNaiveBayes(BaseEstimator):
         self.vars_ = np.zeros([self.classes_.shape[0], X.shape[1]])
         for k in range(self.classes_.shape[0]):
             temp = X[np.where(y == self.classes_[k])] - self.mu_[k]
-            temp = np.sum(np.power(temp,2),axis=0)
-            self.vars_[k] = temp/ (n_k[k] - 1)
+            temp = np.sum(np.power(temp, 2), axis=0)
+            self.vars_[k] = temp / (n_k[k] - 1)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """

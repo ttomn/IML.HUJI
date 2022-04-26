@@ -121,9 +121,9 @@ class LDA(BaseEstimator):
         b = []
         for k in range(self.classes_.shape[0]):
             b.append(np.log(self.pi_[k]) - 0.5 * self.mu_[k] @ self._cov_inv @ self.mu_[k].T)
-        for i in range(X.shape[0]):
-            for k in range(0, self.classes_.shape[0]):
-                likelihoods[i][k] = a[k] @ X[i] + b[k]
+        for k in range(self.classes_.shape[0]):
+            l = X @ a[k] + b[k]
+            likelihoods[:, k] = l
         return likelihoods
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
