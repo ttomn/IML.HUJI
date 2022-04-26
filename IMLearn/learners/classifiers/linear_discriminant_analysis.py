@@ -51,12 +51,12 @@ class LDA(BaseEstimator):
         """
         self.classes_, n_k = np.unique(y, return_counts=True)
         self.pi_ = n_k / y.shape[0]
-        X_and_y = np.concatenate((y.T, X), axis=1)
+        X_and_y = np.concatenate((np.reshape(y, (y.size, 1)), X), axis=1)
         self.mu_ = np.array([np.mean(X_and_y[X_and_y[:, 0] == i, 1:], axis=0) for i in self.classes_])
-        cov_sum = np.zeros(X.shape[1], X.shape[1])
+        cov_sum = np.zeros([X.shape[1], X.shape[1]])
         for i in range(y.shape[0]):
             temp = X[i] - self.mu_[np.where(self.classes_ == y[i])]
-            cov_sum += temp @ temp.T
+            cov_sum += temp.T @ temp
         self.cov_ = cov_sum / (y.shape[0] - self.classes_.shape[0])
         self._cov_inv = inv(self.cov_)
 
@@ -116,7 +116,7 @@ class LDA(BaseEstimator):
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `likelihood` function")
 
-        likelihoods = np.zeros(X.shape[0], self.classes_.shape[0])
+        likelihoods = np.zeros([X.shape[0], self.classes_.shape[0]])
         a = self.mu_ @ self._cov_inv
         b = []
         for k in range(self.classes_.shape[0]):

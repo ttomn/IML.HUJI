@@ -1,4 +1,7 @@
 from typing import NoReturn
+
+from numpy.dual import inv
+
 from ...base import BaseEstimator
 import numpy as np
 
@@ -45,14 +48,13 @@ class GaussianNaiveBayes(BaseEstimator):
         """
         self.classes_, n_k = np.unique(y, return_counts=True)
         self.pi_ = n_k / y.shape[0]
-        X_and_y = np.concatenate((y.T, X), axis=1)
+        X_and_y = np.concatenate((np.reshape(y, (y.size, 1)), X), axis=1)
         self.mu_ = np.array([np.mean(X_and_y[X_and_y[:, 0] == i, 1:], axis=0) for i in self.classes_])
-        self.vars_ = np.zeros(self.classes_.shape[0], X.shape[1])
+        self.vars_ = np.zeros([self.classes_.shape[0], X.shape[1]])
         for k in range(self.classes_.shape[0]):
-            for i in np.where(y == self.classes_[k]):
-                temp = X[i] - self.mu_[k]
-                self.vars_[k] += temp @ temp.T
-            self.vars_[k] = self.vars_[k] / (n_k[k] - 1)
+            temp = X[np.where(y == self.classes_[k])] - self.mu_[k]
+            temp = np.sum(np.power(temp,2),axis=0)
+            self.vars_[k] = temp/ (n_k[k] - 1)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -90,13 +92,13 @@ class GaussianNaiveBayes(BaseEstimator):
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `likelihood` function")
 
-        likelihoods = np.zeros(X.shape[0], self.classes_.shape[0])
+        likelihoods = np.zeros([X.shape[0], self.classes_.shape[0]])
         for k in range(0, self.classes_.shape[0]):
             likelihoods[k] = np.sum(np.log(self.vars_[k])) * (-0.5) + np.log(self.pi_[k])
-            sigma_k_minus_1 = np.inv(np.diag(self.vars_[k]))
+            sigma_k_minus_1 = inv(np.diag(self.vars_[k]))
             for i in range(X.shape[0]):
                 temp = X[i] - self.mu_[k]
-                likelihoods[k][i] -= ((temp.T @ sigma_k_minus_1 @ temp) * 0.5)
+                likelihoods[i][k] -= ((temp.T @ sigma_k_minus_1 @ temp) * 0.5)
         return likelihoods
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:

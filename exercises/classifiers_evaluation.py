@@ -6,6 +6,8 @@ import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.subplots import make_subplots
 
+from utils import decision_surface, custom
+
 pio.templates.default = "simple_white"
 
 
@@ -28,7 +30,8 @@ def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
         Class vector specifying for each sample its class
 
     """
-    raise NotImplementedError()
+    data = np.load(filename)
+    return data[:, [0, 1]], data[:, 2]
 
 
 def run_perceptron():
@@ -41,9 +44,7 @@ def run_perceptron():
     for n, f in [("Linearly Separable", "linearly_separable.npy"),
                  ("Linearly Inseparable", "linearly_inseparable.npy")]:
         # Load dataset
-        data = np.load(f)
-        X = data[:, [0, 1]]
-        y = data[:, 2]
+        X, y = load_dataset(f)
 
         # Fit Perceptron and record loss in each fit iteration
         losses = []
@@ -70,20 +71,38 @@ def compare_gaussian_classifiers():
     """
     Fit both Gaussian Naive Bayes and LDA classifiers on both gaussians1 and gaussians2 datasets
     """
+    models = [GaussianNaiveBayes(), LDA()]
+    model_names = ["Gaussian Naive Bias", "LDA"]
+    symbols = np.array(["circle", "x", "square"])
     for f in ["gaussian1.npy", "gaussian2.npy"]:
         # Load dataset
-        raise NotImplementedError()
+        X, y = load_dataset(f)
+        y = y.astype(int)
 
-        # Fit models and predict over training set
-        raise NotImplementedError()
+        lims = np.array([X.min(axis=0), X.max(axis=0)]).T + np.array([-.4, .4])
+        fig = make_subplots(rows=1, cols=2, subplot_titles=[rf"$\textbf{{{m}}}$" for m in model_names],
+                            horizontal_spacing=0.01, vertical_spacing=.03)
+        for i, model in enumerate(models):
+            # Fit models and predict over training set
+            model.fit(X, y)
+            # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
+            # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
+            from IMLearn.metrics import accuracy
 
-        # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
-        # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
-        from IMLearn.metrics import accuracy
-        raise NotImplementedError()
+            fig.add_traces([decision_surface(model.predict, lims[0], lims[1], showscale=False),
+                            go.Scatter(x=X[:, 0], y=X[:, 1], mode="markers", showlegend=False,
+                                       marker=dict(color=y, symbol=symbols[y],
+                                                   colorscale=[custom[0], custom[-1]],
+                                                   line=dict(color="black", width=1)))],
+                           rows=1, cols=i+1)
+
+            fig.update_layout(title=rf"$\textbf{{predictions of  {f} Dataset}}$",
+                              margin=dict(t=100)) \
+                .update_xaxes(visible=False).update_yaxes(visible=False)
+        fig.show()
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-    run_perceptron()
+    # run_perceptron() todo
     compare_gaussian_classifiers()
