@@ -53,7 +53,7 @@ class GaussianNaiveBayes(BaseEstimator):
         self.vars_ = np.zeros([self.classes_.shape[0], X.shape[1]])
         for k in range(self.classes_.shape[0]):
             temp = X[np.where(y == self.classes_[k])] - self.mu_[k]
-            temp = np.sum(np.power(temp, 2), axis=0)
+            temp = np.sum(temp**2, axis=0)
             self.vars_[k] = temp / (n_k[k] - 1)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
@@ -96,9 +96,9 @@ class GaussianNaiveBayes(BaseEstimator):
         for k in range(0, self.classes_.shape[0]):
             likelihoods[k] = np.sum(np.log(self.vars_[k])) * (-0.5) + np.log(self.pi_[k])
             sigma_k_minus_1 = inv(np.diag(self.vars_[k]))
+            temp = X - self.mu_[k]
             for i in range(X.shape[0]):
-                temp = X[i] - self.mu_[k]
-                likelihoods[i][k] -= ((temp.T @ sigma_k_minus_1 @ temp) * 0.5)
+                likelihoods[i][k] -= ((temp[i].T @ sigma_k_minus_1 @ temp[i]) * 0.5)
         return likelihoods
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:

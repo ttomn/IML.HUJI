@@ -114,7 +114,7 @@ def compare_gaussian_classifiers():
         for i, model in enumerate(models):
             fig.add_trace(go.Scatter(x=X[:, 0], y=X[:, 1], mode="markers", showlegend=False,
                                      marker=dict(color=model.predict(X), symbol=symbols[y],
-                                                 colorscale=[custom[0], custom[-1]],
+                                                 colorscale=[custom[0], custom[2]],
                                                  line=dict(color="black", width=1))), row=1, col=i + 1)
 
             fig.add_trace(go.Scatter(x=model.mu_[:, 0], y=model.mu_[:, 1], mode="markers", showlegend=False,
@@ -130,5 +130,5 @@ def compare_gaussian_classifiers():
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # run_perceptron() todo
+    run_perceptron()
     compare_gaussian_classifiers()
