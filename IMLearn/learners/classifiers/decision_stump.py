@@ -42,7 +42,7 @@ class DecisionStump(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        self.sign_ = max(y)
+        self.sign_ = np.sign(max(y))
         min_feature = 0
         min_err, min_thr = self._find_threshold(X[:, 0], y, self.sign_)
         for j in range(1, X.shape[1]):
@@ -110,15 +110,12 @@ class DecisionStump(BaseEstimator):
         # Sort 2D numpy array by 1st Column
         sorted = joined[joined[:, 0].argsort()]
         min_thr = sorted[0][0]
-        curr_err = min_err = np.sum(sorted[:, 1] == sign)[0]
+        curr_err = min_err = np.sum(sorted[:, np.sign(sorted[:, 1]) != sign])[0]
         for i, row in enumerate(sorted):
-            if row[1] == sign:
-                curr_err += 1
-            else:
-                curr_err -= 1
-                if curr_err < min_err:
-                    min_err = curr_err
-                    min_thr = sorted[i + 1][0] if i != (sorted.shape[0] - 1) else (row[0] + 1)
+            curr_err += row[1] * sign
+            if curr_err < min_err:
+                min_err = curr_err
+                min_thr = sorted[i + 1][0] if i != (sorted.shape[0] - 1) else (row[0] + 1)
         return min_thr, min_err
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
@@ -138,4 +135,4 @@ class DecisionStump(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        return misclassification_error(y, self._predict(X))
+        return misclassification_error(np.sign(y), self._predict(X))

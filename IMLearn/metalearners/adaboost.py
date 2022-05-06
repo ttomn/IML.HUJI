@@ -48,7 +48,12 @@ class AdaBoost(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        raise NotImplementedError()
+        self.D_ = np.ones(y.shape[0]) / y.shape[0]
+        self.models_ = list()
+        for t in range(self.iterations_):
+            new_y = y * self.D_
+            self.models_.append(self.wl_[1].fit(X, new_y))
+            self.models_[-1]
 
     def _predict(self, X):
         """
