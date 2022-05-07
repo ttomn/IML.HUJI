@@ -55,10 +55,10 @@ class AdaBoost(BaseEstimator):
         self.weights_ = list()
         for t in range(self.iterations_):
             new_y = y * self.D_
-            self.models_.append(self.wl_[1].fit(X, new_y))
+            self.models_.append(self.wl_[1]().fit(X, new_y))
             predicted = self.models_[-1].predict(X)
-            epsilon = np.inner(self.D_, predicted == y)
-            self.weights_.append(0.5 * (np.log(1 / epsilon - 1)))
+            epsilon = np.inner(self.D_, predicted != y)
+            self.weights_.append(0.5 * (np.log((1 / epsilon) - 1)))
             self.D_ *= np.exp((y * predicted) * (-self.weights_[-1]))
             self.D_ /= np.sum(self.D_)
 
@@ -76,10 +76,7 @@ class AdaBoost(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        y = np.zeros(X.shape[0])
-        for t in range(0, self.iterations_):
-            y += (self.models_[t].predict(X) * self.weights_[t])
-        return np.sign(y)
+        return self.partial_predict(X, self.iterations_)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -98,7 +95,7 @@ class AdaBoost(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        return misclassification_error(np.sign(y), self._predict(X))
+        return self.partial_loss(X, y, self.iterations_)
 
     def partial_predict(self, X: np.ndarray, T: int) -> np.ndarray:
         """
@@ -117,7 +114,10 @@ class AdaBoost(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        return self.models_[T].predict(X)
+        y = np.zeros(X.shape[0])
+        for t in range(0, T):
+            y += (self.models_[t].predict(X) * self.weights_[t])
+        return np.sign(y)
 
     def partial_loss(self, X: np.ndarray, y: np.ndarray, T: int) -> float:
         """
@@ -139,4 +139,4 @@ class AdaBoost(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        return self.models_[T].loss(X, y)
+        return misclassification_error(np.sign(y), self.partial_predict(X, T))

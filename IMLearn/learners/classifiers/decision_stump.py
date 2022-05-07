@@ -106,19 +106,18 @@ class DecisionStump(BaseEstimator):
         For every tested threshold, values strictly below threshold are predicted as `-sign` whereas values
         which equal to or above the threshold are predicted as `sign`
         """
-        joined = np.concatenate(values, labels, axis=1)
-        # Sort 2D numpy array by 1st Column
-        sorted = joined[joined[:, 0].argsort()]
+        indexes = values.argsort()
+        s_values = values[indexes]
+        s_labels = labels[indexes]
         min_thr_index = 0
-        curr_err = min_err = np.sum(sorted[:, np.sign(sorted[:, 1]) != sign])[0]
-        for i, row in enumerate(sorted):
-            curr_err += row[1] * sign
+        curr_err = min_err = np.sum(np.abs(s_labels[np.sign(s_labels) != sign]))
+        for i in range(s_labels.size):
+            curr_err += s_labels[i] * sign
             if curr_err < min_err:
                 min_err = curr_err
                 min_thr_index = i + 1
 
-        min_thr = sorted[min_thr_index + 1][0] if min_thr_index != (sorted.shape[0] - 1) else sorted[-1][
-                                                                                                  0] + 1
+        min_thr = s_values[min_thr_index + 1] if min_thr_index != (s_values.size - 1) else s_values[-1] + 1
         return min_thr, min_err
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
