@@ -109,13 +109,16 @@ class DecisionStump(BaseEstimator):
         joined = np.concatenate(values, labels, axis=1)
         # Sort 2D numpy array by 1st Column
         sorted = joined[joined[:, 0].argsort()]
-        min_thr = sorted[0][0]
+        min_thr_index = 0
         curr_err = min_err = np.sum(sorted[:, np.sign(sorted[:, 1]) != sign])[0]
         for i, row in enumerate(sorted):
             curr_err += row[1] * sign
             if curr_err < min_err:
                 min_err = curr_err
-                min_thr = sorted[i + 1][0] if i != (sorted.shape[0] - 1) else (row[0] + 1)
+                min_thr_index = i + 1
+
+        min_thr = sorted[min_thr_index + 1][0] if min_thr_index != (sorted.shape[0] - 1) else sorted[-1][
+                                                                                                  0] + 1
         return min_thr, min_err
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
