@@ -95,7 +95,7 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                                                line=dict(color="black", width=1)))],
                        rows=(i // 2) + 1, cols=(i % 2) + 1)
 
-    fig.update_layout(title=rf"$\textbf{{(2) Decision Boundaries Using AdaBoost}}$",
+    fig.update_layout(title=rf"$\textbf{{Decision Boundaries Using AdaBoost}}$",
                       margin=dict(t=100)) \
         .update_xaxes(visible=False).update_yaxes(visible=False)
     fig.show()
@@ -124,8 +124,8 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                                          custom[0],
                                          custom[-1]],
                                      line=dict(color="black", width=1)))],
-        layout=go.Layout(title=rf"$\textbf{{heyyyyyyyyyyyyyyyyyyyyyyyy {best_t + 1} Loss "
-                               rf"{losses_test[best_t]}}}$")).update_xaxes(
+        layout=go.Layout(title=rf"$\textbf{{Decision Boundaries of Training Set With Point Size "
+                               rf"Proportional to Its Weight In the Last Iteration}}$")).update_xaxes(
         visible=False).update_yaxes(
         visible=False).show()
 

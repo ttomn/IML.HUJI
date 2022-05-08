@@ -42,15 +42,18 @@ class DecisionStump(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        self.sign_ = np.sign(max(y))
+        signs = [1,-1]
         min_feature = 0
-        min_err, min_thr = self._find_threshold(X[:, 0], y, self.sign_)
-        for j in range(1, X.shape[1]):
-            curr_err, curr_thr = self._find_threshold(X[:, j], y, self.sign_)
-            if min_err > curr_err:
-                min_err, min_thr, min_feature = curr_err, curr_thr, j
+        min_sign = 1
+        min_err, min_thr = 1,1
+        for j in range(0, X.shape[1]):
+            for s in signs:
+                curr_thr, curr_err = self._find_threshold(X[:, j], y, s)
+                if min_err > curr_err:
+                    min_err, min_thr, min_feature, min_sign = curr_err, curr_thr, j, s
         self.j_ = min_feature
         self.threshold_ = min_thr
+        self.sign_ = min_sign
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -112,12 +115,12 @@ class DecisionStump(BaseEstimator):
         min_thr_index = 0
         curr_err = min_err = np.sum(np.abs(s_labels[np.sign(s_labels) != sign]))
         for i in range(s_labels.size):
-            curr_err += s_labels[i] * sign
+            curr_err += (s_labels[i] * sign)
             if curr_err < min_err:
                 min_err = curr_err
                 min_thr_index = i + 1
 
-        min_thr = s_values[min_thr_index + 1] if min_thr_index != (s_values.size - 1) else s_values[-1] + 1
+        min_thr = s_values[min_thr_index + 1] if min_thr_index < (s_values.size - 1) else s_values[-1] + 1
         return min_thr, min_err
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:

@@ -57,6 +57,7 @@ class AdaBoost(BaseEstimator):
             new_y = y * self.D_
             self.models_.append(self.wl_[1]().fit(X, new_y))
             predicted = self.models_[-1].predict(X)
+            k= predicted != y
             epsilon = np.inner(self.D_, predicted != y)
             self.weights_.append(0.5 * (np.log((1 / epsilon) - 1)))
             self.D_ *= np.exp((y * predicted) * (-self.weights_[-1]))
