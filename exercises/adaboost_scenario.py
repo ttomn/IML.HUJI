@@ -66,7 +66,8 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     fig = go.Figure(layout=go.Layout(
         title=rf"$\textbf{{Loss of Adaboost Running With Decision Stump As a Function of Amount "
               rf"of Base Estimators With Noise of {noise}}}$",
-        margin=dict(t=100)))
+        margin=dict(t=100),xaxis={"title": "amount of iterations"},
+                           yaxis={"title": "loss"},))
     fig.add_trace(go.Scatter(x=learners_amount, y=losses_train, mode="lines", name="train_samples"))
     fig.add_trace(go.Scatter(x=learners_amount, y=losses_test, mode="lines", name="test_samples"))
     fig.show()
@@ -82,16 +83,13 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
         for i, t in enumerate(T):
             fig.add_traces(
                 [decision_surface_particial(learner.partial_predict, lims[0], lims[1], t=t, showscale=False),
-                 go.Scatter(x=train_X[:, 0], y=train_X[:, 1], mode="markers", showlegend=False,
-                            marker=dict(color=train_y, symbol=symbols[0], colorscale=[custom[0], custom[-1]],
-                                        line=dict(color="black", width=1))),
                  go.Scatter(x=test_X[:, 0], y=test_X[:, 1], mode="markers", showlegend=False,
-                            marker=dict(color=test_y, symbol=symbols[1], colorscale=[custom[0], custom[-1]],
+                            marker=dict(color=test_y, symbol=symbols[0], colorscale=[custom[0],
+                                                                                        custom[-1]],
                                         line=dict(color="black", width=1)))],
                 rows=(i // 2) + 1, cols=(i % 2) + 1)
 
-        fig.update_layout(title=rf"$\textbf{{Decision Boundaries Using AdaBoost}}$",
-                          margin=dict(t=100)) \
+        fig.update_layout(title=rf"$\textbf{{Decision Boundaries Using AdaBoost}}$", margin=dict(t=100)) \
             .update_xaxes(visible=False).update_yaxes(visible=False)
         fig.show()
 
@@ -102,10 +100,10 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                                              showscale=False),
                   go.Scatter(x=test_X[:, 0], y=test_X[:, 1], mode="markers", showlegend=False,
 
-                             marker=dict(color=test_y, symbol=symbols[1], colorscale=[custom[0], custom[-1]],
+                             marker=dict(color=test_y, symbol=symbols[0], colorscale=[custom[0], custom[-1]],
                                          line=dict(color="black", width=1)))],
-            layout=go.Layout(title=rf"$\textbf{{Best Ensemble Size is {best_t + 1} With Loss "
-                                   rf"{losses_test[best_t]}}}$")).update_xaxes(
+            layout=go.Layout(title=rf"$\textbf{{Best Ensemble Size is {best_t + 1} With Accuracy "
+                                   rf"{1 - losses_test[best_t]}}}$")).update_xaxes(
             visible=False).update_yaxes(
             visible=False).show()
 
@@ -114,7 +112,7 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                                                showscale=False),
                     go.Scatter(x=train_X[:, 0], y=train_X[:, 1], mode="markers", showlegend=False,
                                marker=dict(size=learner.D_ / np.max(learner.D_) * 5, color=train_y,
-                                           symbol=symbols[0], colorscale=[custom[0], custom[-1]],
+                                           symbol=symbols[1], colorscale=[custom[0], custom[-1]],
                                            line=dict(color="black", width=1)))],
               layout=go.Layout(title=rf"$\textbf{{Decision Boundaries of Training Set With Point Size "
                                      rf"Proportional to Its Weight In the Last Iteration "
