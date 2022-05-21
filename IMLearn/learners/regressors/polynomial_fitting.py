@@ -35,7 +35,7 @@ class PolynomialFitting(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        vander_X = self.__transform(X)
+        vander_X = self.__transform(X.flatten())
         self.lin_model._fit(vander_X, y)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
@@ -52,7 +52,7 @@ class PolynomialFitting(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        vander_X = self.__transform(X)
+        vander_X = self.__transform(X.flatten())
         return self.lin_model._predict(vander_X)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
