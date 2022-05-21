@@ -3,10 +3,12 @@ from copy import deepcopy
 from typing import Tuple, Callable
 import numpy as np
 from IMLearn import BaseEstimator
+from IMLearn.metrics import mean_square_error
 
 
 def cross_validate(estimator: BaseEstimator, X: np.ndarray, y: np.ndarray,
-                   scoring: Callable[[np.ndarray, np.ndarray, ...], float], cv: int = 5) -> Tuple[float, float]:
+                   scoring: Callable[[np.ndarray, np.ndarray, ...], float], cv: int = 5) -> Tuple[
+    float, float]:
     """
     Evaluate metric by cross-validation for given estimator
 
@@ -37,4 +39,26 @@ def cross_validate(estimator: BaseEstimator, X: np.ndarray, y: np.ndarray,
     validation_score: float
         Average validation score over folds
     """
-    raise NotImplementedError()
+    indexes = np.random.permutation(X.shape[0])
+    X_folds = list()
+    y_folds = list()
+    for i in range(cv):
+        from_index = int(i * X.shape[0] / cv)
+        to_index = int((i + 1) * X.shape[0] / cv)
+        fold_indexes = indexes[from_index:to_index]
+        X_folds.append(X[fold_indexes, :])
+        y_folds.append(y[fold_indexes, :])
+
+    train_score = 0
+    validation_score = 0
+    for i in range(cv):
+        train_x = np.concatenate(X_folds[:i], X_folds[i + 1:], axis=1)
+        train_y = np.concatenate(y_folds[:i], y_folds[i + 1:], axis=1)
+        validation_X = X_folds[i]
+        validation_y = y_folds[i]
+        estimator.fit(train_x, train_y)
+        train_score += mean_square_error(train_y, estimator.predict(train_x))
+        validation_score += mean_square_error(validation_y, estimator.predict(validation_X))
+    train_score /= cv
+    validation_score /= cv
+    return train_score, validation_score
