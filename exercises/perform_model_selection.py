@@ -27,7 +27,32 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
     """
     # Question 1 - Generate dataset for model f(x)=(x+3)(x+2)(x+1)(x-1)(x-2) + eps for eps Gaussian noise
     # and split into training- and testing portions
-    raise NotImplementedError()
+    X = np.random.uniform(-1.2, 2, n_samples)
+    f_x = (X + 3) * (X + 2) * (X + 1) * (X - 1) * (X - 2)
+    epsilon = np.random.normal(0, noise, n_samples)
+    y = f_x + epsilon
+    df_X = pd.DataFrame(X, columns=['x'])
+    series_y = pd.Series(y)
+    series_real_y = pd.Series(f_x)
+    # train_X, train_y, test_X, test_y = split_train_test(X=df_X, y=series_y, train_proportion=1 / 3)
+    train_X_df, train_real_y_df, test_X_df, test_real_y_df = split_train_test(X=df_X, y=series_real_y,
+                                                                  train_proportion=1 / 3)
+    train_X = train_X_df.to_numpy().flatten()
+    train_real_y = train_real_y_df.to_numpy().flatten()
+    test_X = test_X_df.to_numpy().flatten()
+    test_real_y = test_real_y_df.to_numpy().flatten()
+
+    fig = make_subplots(rows=1, cols=1)
+
+    fig.update_layout(title=rf"$\textbf{{The Noiseless Model}}$")
+
+    fig.add_trace(go.Scatter(x=train_X, y=train_real_y, mode="markers", showlegend=True,
+                                 marker=dict(color="blue"),name="train"))
+    fig.add_trace(go.Scatter(x=test_X, y=test_real_y, mode="markers", showlegend=True,
+                             marker=dict(color="red"),name="test"))
+    fig.update_xaxes(title_text="x")
+    fig.update_yaxes(title_text="f(x)")
+    fig.show()
 
     # Question 2 - Perform CV for polynomial fitting with degrees 0,1,...,10
     raise NotImplementedError()
@@ -61,4 +86,4 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 
 if __name__ == '__main__':
     np.random.seed(0)
-    raise NotImplementedError()
+    select_polynomial_degree(n_samples=100, noise=5)
