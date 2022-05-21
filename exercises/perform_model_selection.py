@@ -34,31 +34,48 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
     df_X = pd.DataFrame(X, columns=['x'])
     series_y = pd.Series(y)
     series_real_y = pd.Series(f_x)
-    # train_X, train_y, test_X, test_y = split_train_test(X=df_X, y=series_y, train_proportion=1 / 3)
-    train_X_df, train_real_y_df, test_X_df, test_real_y_df = split_train_test(X=df_X, y=series_real_y,
-                                                                  train_proportion=1 / 3)
-    train_X = train_X_df.to_numpy().flatten()
+    train_real_X_df, train_real_y_df, test_real_X_df, test_real_y_df = split_train_test(X=df_X,
+                                                                                        y=series_real_y,
+                                                                                        train_proportion=1 / 3)
+    train_real_X = train_real_X_df.to_numpy().flatten()
     train_real_y = train_real_y_df.to_numpy().flatten()
-    test_X = test_X_df.to_numpy().flatten()
+    test_real_X = test_real_X_df.to_numpy().flatten()
     test_real_y = test_real_y_df.to_numpy().flatten()
 
     fig = make_subplots(rows=1, cols=1)
 
     fig.update_layout(title=rf"$\textbf{{The Noiseless Model}}$")
 
-    fig.add_trace(go.Scatter(x=train_X, y=train_real_y, mode="markers", showlegend=True,
-                                 marker=dict(color="blue"),name="train"))
-    fig.add_trace(go.Scatter(x=test_X, y=test_real_y, mode="markers", showlegend=True,
-                             marker=dict(color="red"),name="test"))
+    fig.add_trace(go.Scatter(x=train_real_X, y=train_real_y, mode="markers", showlegend=True,
+                             marker=dict(color="blue"), name="train"))
+    fig.add_trace(go.Scatter(x=test_real_X, y=test_real_y, mode="markers", showlegend=True,
+                             marker=dict(color="red"), name="test"))
     fig.update_xaxes(title_text="x")
     fig.update_yaxes(title_text="f(x)")
     fig.show()
 
     # Question 2 - Perform CV for polynomial fitting with degrees 0,1,...,10
-    raise NotImplementedError()
+    # train_X, train_y, test_X, test_y = split_train_test(X=df_X, y=series_y, train_proportion=1 / 3)
+    train_X_df, train_y_df, test_X_df, test_y_df = split_train_test(X=df_X, y=series_y,
+                                                                    train_proportion=1 / 3)
+    train_X = train_X_df.to_numpy()
+    train_y = train_y_df.to_numpy().flatten()
+    test_X = test_X_df.to_numpy()
+    test_y = test_y_df.to_numpy().flatten()
+
+    for k in range(11):
+        learner = PolynomialFitting(k)
+        train_score, validation_score = cross_validate(learner, train_X, train_y, mean_square_error)
+        print("for k=" + str(k) + " the scores are:\n")
+        print("train score=" + str(train_score) + "\n")
+        print("validation score=" + str(validation_score) + "\n")
 
     # Question 3 - Using best value of k, fit a k-degree polynomial model and report test error
-    raise NotImplementedError()
+    k = 5
+    learner = PolynomialFitting(k)
+    learner.fit(train_X, train_y)
+    print("test error for k=" + str(k) + " is " + str(round(mean_square_error(test_y, learner.predict(
+        test_X)), 2)))
 
 
 def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 500):
