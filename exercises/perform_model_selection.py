@@ -63,19 +63,22 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
     test_X = test_X_df.to_numpy()
     test_y = test_y_df.to_numpy().flatten()
 
-    for k in range(11):
+    min_k = 0
+    min_validation_score = 10000000000
+    for k in range(0, 11):
         learner = PolynomialFitting(k)
         train_score, validation_score = cross_validate(learner, train_X, train_y, mean_square_error)
-        print("for k=" + str(k) + " the scores are:\n")
-        print("train score=" + str(train_score) + "\n")
+        if validation_score < min_validation_score:
+            min_k, min_validation_score = k, validation_score
+        print("for k=" + str(k) + " the scores are:")
+        print("train score=" + str(train_score))
         print("validation score=" + str(validation_score) + "\n")
 
     # Question 3 - Using best value of k, fit a k-degree polynomial model and report test error
-    k = 5
-    learner = PolynomialFitting(k)
+    learner = PolynomialFitting(min_k)
     learner.fit(train_X, train_y)
-    print("test error for k=" + str(k) + " is " + str(round(mean_square_error(test_y, learner.predict(
-        test_X)), 2)))
+    print("test error for k=" + str(min_k) + " is " + str(round(mean_square_error(test_y, learner.predict(
+        test_X)), 2)) + "\n")
 
 
 def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 500):
@@ -104,3 +107,5 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 if __name__ == '__main__':
     np.random.seed(0)
     select_polynomial_degree(n_samples=100, noise=5)
+    select_polynomial_degree(n_samples=100, noise=0)
+    select_polynomial_degree(n_samples=1500, noise=10)
