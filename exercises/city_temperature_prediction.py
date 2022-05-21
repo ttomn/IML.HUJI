@@ -112,7 +112,7 @@ def q5(df):
 if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of city temperature dataset
-    df = load_data("C:/Users/user/Desktop/Tom/iml/IML.HUJI-main/datasets/City_Temperature.csv")
+    df = load_data("C:\\Users\\ttomn\\OneDrive\\Desktop\\IML\\IML.HUJI\\datasets\\City_Temperature.csv")
 
     # Question 2 - Exploring data for specific country
     df_israel = df[(df["Country"] == "Israel")]
