@@ -1,6 +1,7 @@
 from __future__ import annotations
 import numpy as np
 import pandas as pd
+import sklearn
 from sklearn import datasets
 from IMLearn.metrics import mean_square_error
 from IMLearn.utils import split_train_test
@@ -89,7 +90,35 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
         Number of regularization parameter values to evaluate for each of the algorithms
     """
     # Question 6 - Load diabetes dataset and split into training and testing portions
-    raise NotImplementedError()
+    diabetes = datasets.load_diabetes()
+    X, y = diabetes.data, diabetes.target
+    train_X, test_X, train_y, test_y = sklearn.model_selection.train_test_split(X, y, train_size=n_samples)
+    ridge_train_score = np.zeros(n_evaluations)
+    ridge_validation_score = np.zeros(n_evaluations)
+    lasso_train_score = np.zeros(n_evaluations)
+    lasso_validation_score = np.zeros(n_evaluations)
+    # lambdas = todo
+    for i, lam in enumerate(range(n_evaluations)):
+        learner = RidgeRegression(lam=lam, include_intercept=True)
+        train_score, validation_score = cross_validate(learner, train_X, train_y, mean_square_error, cv=5)
+        ridge_train_score[i] = train_score
+        ridge_validation_score[i] = validation_score
+
+    fig = make_subplots(rows=1, cols=1)
+
+    fig.update_layout(
+        title=rf"$\textbf{{Cross Validation Model With Sample Size of}}$")
+
+    fig.add_trace(
+        go.Scatter(x=list(range(n_evaluations)), y=ridge_train_score, mode="markers", showlegend=True,
+                   marker=dict(color="blue"), name="train score"))
+    fig.add_trace(
+        go.Scatter(x=list(range(n_evaluations)), y=ridge_validation_score, mode="markers", showlegend=True,
+                   marker=dict(color="red"), name="validation score"))
+
+    fig.update_xaxes(title_text="regularization parameter")
+    fig.update_yaxes(title_text="error")
+    fig.show()
 
     # Question 7 - Perform CV for different values of the regularization parameter for Ridge and Lasso regressions
     raise NotImplementedError()
@@ -100,6 +129,7 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 
 if __name__ == '__main__':
     np.random.seed(0)
-    select_polynomial_degree(n_samples=100, noise=5)
-    select_polynomial_degree(n_samples=100, noise=0)
-    select_polynomial_degree(n_samples=1500, noise=10)
+    # select_polynomial_degree(n_samples=100, noise=5)
+    # select_polynomial_degree(n_samples=100, noise=0)
+    # select_polynomial_degree(n_samples=1500, noise=10)
+    select_regularization_parameter(n_samples=50, n_evaluations=500)
