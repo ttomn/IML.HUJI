@@ -93,16 +93,15 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
     diabetes = datasets.load_diabetes()
     X, y = diabetes.data, diabetes.target
     train_X, test_X, train_y, test_y = sklearn.model_selection.train_test_split(X, y, train_size=n_samples)
-    ridge_train_score = np.zeros(n_evaluations)
-    ridge_validation_score = np.zeros(n_evaluations)
-    lasso_train_score = np.zeros(n_evaluations)
-    lasso_validation_score = np.zeros(n_evaluations)
-    # lambdas = todo
-    for i, lam in enumerate(range(n_evaluations)):
+    # learners = [RidgeRegression, lasso]
+    learner_train_score = np.zeros(n_evaluations)
+    learner_validation_score = np.zeros(n_evaluations)
+    lambdas = np.linspace(start=0, stop=10, num=n_evaluations)
+    for i, lam in enumerate(lambdas):
         learner = RidgeRegression(lam=lam, include_intercept=True)
         train_score, validation_score = cross_validate(learner, train_X, train_y, mean_square_error, cv=5)
-        ridge_train_score[i] = train_score
-        ridge_validation_score[i] = validation_score
+        learner_train_score[i] = train_score
+        learner_validation_score[i] = validation_score
 
     fig = make_subplots(rows=1, cols=1)
 
@@ -110,10 +109,10 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
         title=rf"$\textbf{{Cross Validation Model With Sample Size of}}$")
 
     fig.add_trace(
-        go.Scatter(x=list(range(n_evaluations)), y=ridge_train_score, mode="markers", showlegend=True,
+        go.Scatter(x=lambdas, y=learner_train_score, mode="markers", showlegend=True,
                    marker=dict(color="blue"), name="train score"))
     fig.add_trace(
-        go.Scatter(x=list(range(n_evaluations)), y=ridge_validation_score, mode="markers", showlegend=True,
+        go.Scatter(x=lambdas, y=learner_validation_score, mode="markers", showlegend=True,
                    marker=dict(color="red"), name="validation score"))
 
     fig.update_xaxes(title_text="regularization parameter")
