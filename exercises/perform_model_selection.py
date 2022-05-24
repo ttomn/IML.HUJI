@@ -98,6 +98,7 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
     # regressions
     model_names = ["Ridge", "Lasso"]
     lambdas = np.linspace(start=0, stop=10, num=n_evaluations)
+    min_validation_error_dict = dict()
     for model in model_names:
         learner_train_score = np.zeros(n_evaluations)
         learner_validation_score = np.zeros(n_evaluations)
@@ -110,6 +111,7 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
             learner_train_score[i] = train_score
             learner_validation_score[i] = validation_score
 
+        min_validation_error_dict[model] = lambdas[learner_validation_score.argmin()]
         fig = make_subplots(rows=1, cols=1)
 
         fig.update_layout(
@@ -126,7 +128,17 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
         fig.update_yaxes(title_text="error")
         fig.show()
     # Question 8 - Compare best Ridge model, best Lasso model and Least Squares model
-    raise NotImplementedError()
+    for lam in min_validation_error_dict.values():
+        ridge = RidgeRegression(lam=lam, include_intercept=True)
+        ridge.fit(train_X, train_y)
+        print("ridge regressor with lambda of ", lam, "has test error of ", ridge.loss(test_X, test_y))
+        lasso = Lasso(alpha=lam, fit_intercept=True)
+        lasso.fit(train_X, train_y)
+        print("lasso regressor with lambda of ", lam, "has test error of ",
+              mean_square_error(lasso.predict(test_X), test_y))
+    linear = LinearRegression(include_intercept=True)
+    linear.fit(train_X, train_y)
+    print("linear regressor has test error of ", linear.loss(test_X, test_y))
 
 
 if __name__ == '__main__':
