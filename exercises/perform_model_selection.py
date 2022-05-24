@@ -41,33 +41,35 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
     test_X = test_X_df.to_numpy()
     test_y = test_y_df.to_numpy().flatten()
 
-    fig = make_subplots(rows=1, cols=1)
-
-    fig.update_layout(
-        title=rf"$\textbf{{Cross Validation Model With Sample Size of {n_samples} and Noise of {noise}}}$")
-
-    fig.add_trace(go.Scatter(x=X, y=f_x, mode="markers", showlegend=True,
-                             marker=dict(color="black"), name="noiseless"))
-    fig.add_trace(go.Scatter(x=train_X.flatten(), y=train_y, mode="markers", showlegend=True,
-                             marker=dict(color="blue"), name="train with noise"))
-    fig.add_trace(go.Scatter(x=test_X.flatten(), y=test_y, mode="markers", showlegend=True,
-                             marker=dict(color="red"), name="test with noise"))
-    fig.update_xaxes(title_text="x")
-    fig.update_yaxes(title_text="y")
-    fig.show()
+    fig = make_subplots(rows=1, cols=1, x_title="x", y_title="y", ).update_layout(
+        title=rf"$\textbf{{Samples Before Model With Sample Size of {n_samples} and Noise of {noise}}}$")
+    fig.add_traces([go.Scatter(x=X, y=f_x, mode="markers", showlegend=True,
+                               marker=dict(color="black"), name="noiseless"),
+                    go.Scatter(x=train_X.flatten(), y=train_y, mode="markers", showlegend=True,
+                               marker=dict(color="blue"), name="train with noise"),
+                    go.Scatter(x=test_X.flatten(), y=test_y, mode="markers", showlegend=True,
+                               marker=dict(color="red"), name="test with noise")]).show()
 
     # Question 2 - Perform CV for polynomial fitting with degrees 0,1,...,10
     # train_X, train_y, test_X, test_y = split_train_test(X=df_X, y=series_y, train_proportion=1 / 3)
     min_k = 0
     min_validation_score = 10000000000
+    train_score_array = np.zeros(11)
+    validation_score_array = np.zeros(11)
     for k in range(0, 11):
         learner = PolynomialFitting(k)
         train_score, validation_score = cross_validate(learner, train_X, train_y, mean_square_error)
         if validation_score < min_validation_score:
             min_k, min_validation_score = k, validation_score
-        print("for k=" + str(k) + " the scores are:")
-        print("train score=" + str(train_score))
-        print("validation score=" + str(validation_score) + "\n")
+        train_score_array[k] = train_score
+        validation_score_array[k] = validation_score
+
+    fig = make_subplots(rows=1, cols=1, x_title="degree of the polynom", y_title="scores", ).update_layout(
+        title=rf"$\textbf{{Cross Validation Model With Sample Size of {n_samples} and Noise of {noise}}}$")
+    fig.add_traces([go.Scatter(x=list(range(0, 11)), y=train_score_array, mode="lines", showlegend=True,
+                               marker=dict(color="blue"), name="train score"),
+                    go.Scatter(x=list(range(0, 11)), y=validation_score_array, mode="lines", showlegend=True,
+                               marker=dict(color="red"), name="validation score")]).show()
 
     # Question 3 - Using best value of k, fit a k-degree polynomial model and report test error
     learner = PolynomialFitting(min_k)
@@ -143,7 +145,7 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # select_polynomial_degree(n_samples=100, noise=5)
-    # select_polynomial_degree(n_samples=100, noise=0)
-    # select_polynomial_degree(n_samples=1500, noise=10)
-    select_regularization_parameter(n_samples=50, n_evaluations=500)
+    select_polynomial_degree(n_samples=100, noise=5)
+    select_polynomial_degree(n_samples=100, noise=0)
+    select_polynomial_degree(n_samples=1500, noise=10)
+    # select_regularization_parameter(n_samples=50, n_evaluations=500)
