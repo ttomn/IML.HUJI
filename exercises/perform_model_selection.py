@@ -93,35 +93,38 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
     diabetes = datasets.load_diabetes()
     X, y = diabetes.data, diabetes.target
     train_X, test_X, train_y, test_y = sklearn.model_selection.train_test_split(X, y, train_size=n_samples)
-    # learners = [RidgeRegression, lasso]
-    learner_train_score = np.zeros(n_evaluations)
-    learner_validation_score = np.zeros(n_evaluations)
+
+    # Question 7 - Perform CV for different values of the regularization parameter for Ridge and Lasso
+    # regressions
+    model_names = ["Ridge", "Lasso"]
     lambdas = np.linspace(start=0, stop=10, num=n_evaluations)
-    for i, lam in enumerate(lambdas):
-        learner = RidgeRegression(lam=lam, include_intercept=True)
-        train_score, validation_score = cross_validate(learner, train_X, train_y, mean_square_error, cv=5)
-        learner_train_score[i] = train_score
-        learner_validation_score[i] = validation_score
+    for model in model_names:
+        learner_train_score = np.zeros(n_evaluations)
+        learner_validation_score = np.zeros(n_evaluations)
+        for i, lam in enumerate(lambdas):
+            if model == "Lasso":
+                learner = Lasso(alpha=lam, fit_intercept=True)
+            else:
+                learner = RidgeRegression(lam=lam, include_intercept=True)
+            train_score, validation_score = cross_validate(learner, train_X, train_y, mean_square_error, cv=5)
+            learner_train_score[i] = train_score
+            learner_validation_score[i] = validation_score
 
-    fig = make_subplots(rows=1, cols=1)
+        fig = make_subplots(rows=1, cols=1)
 
-    fig.update_layout(
-        title=rf"$\textbf{{Cross Validation Model With Sample Size of}}$")
+        fig.update_layout(
+            title=rf"$\textbf{{Cross Validation {model} Model With Sample Size of}}$")
 
-    fig.add_trace(
-        go.Scatter(x=lambdas, y=learner_train_score, mode="markers", showlegend=True,
-                   marker=dict(color="blue"), name="train score"))
-    fig.add_trace(
-        go.Scatter(x=lambdas, y=learner_validation_score, mode="markers", showlegend=True,
-                   marker=dict(color="red"), name="validation score"))
+        fig.add_trace(
+            go.Scatter(x=lambdas, y=learner_train_score, mode="markers", showlegend=True,
+                       marker=dict(color="blue"), name="train error"))
+        fig.add_trace(
+            go.Scatter(x=lambdas, y=learner_validation_score, mode="markers", showlegend=True,
+                       marker=dict(color="red"), name="validation error"))
 
-    fig.update_xaxes(title_text="regularization parameter")
-    fig.update_yaxes(title_text="error")
-    fig.show()
-
-    # Question 7 - Perform CV for different values of the regularization parameter for Ridge and Lasso regressions
-    raise NotImplementedError()
-
+        fig.update_xaxes(title_text="regularization parameter")
+        fig.update_yaxes(title_text="error")
+        fig.show()
     # Question 8 - Compare best Ridge model, best Lasso model and Least Squares model
     raise NotImplementedError()
 
