@@ -34,8 +34,8 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .2
 
     """
     indexes = np.random.permutation(X.shape[0])
-    test_indexes = indexes[:int(train_proportion * X.shape[0])]
-    train_indexes = indexes[int(train_proportion * X.shape[0]):]
+    train_indexes = indexes[:int(train_proportion * X.shape[0])]
+    test_indexes = indexes[int(train_proportion * X.shape[0]):]
     train_X = X.iloc[train_indexes, :]
     test_X = X.iloc[test_indexes, :]
     train_y = y.iloc[train_indexes]

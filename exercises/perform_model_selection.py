@@ -8,7 +8,6 @@ from IMLearn.utils import split_train_test
 from IMLearn.model_selection import cross_validate
 from IMLearn.learners.regressors import PolynomialFitting, LinearRegression, RidgeRegression
 from sklearn.linear_model import Lasso
-
 from utils import *
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -28,27 +27,30 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
     """
     # Question 1 - Generate dataset for model f(x)=(x+3)(x+2)(x+1)(x-1)(x-2) + eps for eps Gaussian noise
     # and split into training- and testing portions
-    X = np.random.uniform(-1.2, 2, n_samples)
+    X = np.linspace(-1.2, 2, n_samples)
     f_x = (X + 3) * (X + 2) * (X + 1) * (X - 1) * (X - 2)
     epsilon = np.random.normal(0, noise, n_samples)
     y = f_x + epsilon
     df_X = pd.DataFrame(X, columns=['x'])
     series_y = pd.Series(y)
     train_X_df, train_y_df, test_X_df, test_y_df = split_train_test(X=df_X, y=series_y,
-                                                                    train_proportion=1 / 3)
+                                                                    train_proportion=2 / 3)
     train_X = train_X_df.to_numpy()
     train_y = train_y_df.to_numpy().flatten()
     test_X = test_X_df.to_numpy()
     test_y = test_y_df.to_numpy().flatten()
 
-    fig = make_subplots(rows=1, cols=1, x_title="x", y_title="y", ).update_layout(
+    fig = make_subplots(rows=1, cols=1).update_layout(
         title=rf"$\textbf{{Samples Before Model With Sample Size of {n_samples} and Noise of {noise}}}$")
     fig.add_traces([go.Scatter(x=X, y=f_x, mode="markers", showlegend=True,
                                marker=dict(color="black"), name="noiseless"),
                     go.Scatter(x=train_X.flatten(), y=train_y, mode="markers", showlegend=True,
                                marker=dict(color="blue"), name="train with noise"),
                     go.Scatter(x=test_X.flatten(), y=test_y, mode="markers", showlegend=True,
-                               marker=dict(color="red"), name="test with noise")]).show()
+                               marker=dict(color="red"), name="test with noise")])
+    fig.update_xaxes(title_text="x")
+    fig.update_yaxes(title_text="y")
+    fig.show()
 
     # Question 2 - Perform CV for polynomial fitting with degrees 0,1,...,10
     # train_X, train_y, test_X, test_y = split_train_test(X=df_X, y=series_y, train_proportion=1 / 3)
@@ -64,12 +66,15 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
         train_score_array[k] = train_score
         validation_score_array[k] = validation_score
 
-    fig = make_subplots(rows=1, cols=1, x_title="degree of the polynom", y_title="scores", ).update_layout(
+    fig = make_subplots(rows=1, cols=1).update_layout(
         title=rf"$\textbf{{Cross Validation Model With Sample Size of {n_samples} and Noise of {noise}}}$")
     fig.add_traces([go.Scatter(x=list(range(0, 11)), y=train_score_array, mode="lines", showlegend=True,
                                marker=dict(color="blue"), name="train score"),
                     go.Scatter(x=list(range(0, 11)), y=validation_score_array, mode="lines", showlegend=True,
-                               marker=dict(color="red"), name="validation score")]).show()
+                               marker=dict(color="red"), name="validation score")])
+    fig.update_xaxes(title_text="degree of the polynom")
+    fig.update_yaxes(title_text="scores")
+    fig.show()
 
     # Question 3 - Using best value of k, fit a k-degree polynomial model and report test error
     learner = PolynomialFitting(min_k)
@@ -99,7 +104,7 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
     # Question 7 - Perform CV for different values of the regularization parameter for Ridge and Lasso
     # regressions
     model_names = ["Ridge", "Lasso"]
-    lambdas = np.linspace(start=0, stop=10, num=n_evaluations)
+    lambdas = np.linspace(start=0, stop=2, num=n_evaluations)
     min_validation_error_dict = dict()
     for model in model_names:
         learner_train_score = np.zeros(n_evaluations)
@@ -120,10 +125,10 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
             title=rf"$\textbf{{Cross Validation {model} Model With Sample Size of}}$")
 
         fig.add_trace(
-            go.Scatter(x=lambdas, y=learner_train_score, mode="markers", showlegend=True,
+            go.Scatter(x=lambdas, y=learner_train_score, mode="lines", showlegend=True,
                        marker=dict(color="blue"), name="train error"))
         fig.add_trace(
-            go.Scatter(x=lambdas, y=learner_validation_score, mode="markers", showlegend=True,
+            go.Scatter(x=lambdas, y=learner_validation_score, mode="lines", showlegend=True,
                        marker=dict(color="red"), name="validation error"))
 
         fig.update_xaxes(title_text="regularization parameter")
@@ -148,4 +153,4 @@ if __name__ == '__main__':
     select_polynomial_degree(n_samples=100, noise=5)
     select_polynomial_degree(n_samples=100, noise=0)
     select_polynomial_degree(n_samples=1500, noise=10)
-    # select_regularization_parameter(n_samples=50, n_evaluations=500)
+    select_regularization_parameter(n_samples=50, n_evaluations=500)
